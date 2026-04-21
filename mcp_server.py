@@ -21,7 +21,7 @@ def generate_random_text(length=6):
     return ''.join(random.choice(chars) for _ in range(length))
 
 def get_unique_text():
-    model = genai.GenerativeModel("gemini-2.0-flash")
+    model = genai.GenerativeModel("gemini-2.5-flash-lite")
     prompt = (
         "Generate a truly random 6-character alphanumeric string using both uppercase and lowercase letters. "
         "Avoid repeating previous outputs. Do not use dictionary words or common sequences. "
