@@ -102,7 +102,7 @@ async def verify_captcha(captcha_id: str, user_input: str) -> str:
 async def break_captcha(captcha_image_base64: str) -> dict:
     print("[SERVER] Attempting to break captcha via Gemini...")
     try:
-        model = genai.GenerativeModel("gemini-2.0-flash")
+        model = genai.GenerativeModel("gemini-2.5-flash-lite")
         img_bytes = base64.b64decode(captcha_image_base64.split(",", 1)[1])
         img = Image.open(io.BytesIO(img_bytes))
 
