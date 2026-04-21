@@ -38,7 +38,7 @@ async def main():
 
 
     llm = ChatGoogleGenerativeAI(
-        model="gemini-2.0-flash",
+        model="gemini-2.5-flash-lite",
         google_api_key=GEMINI_KEY,
         temperature=0.3
     )
