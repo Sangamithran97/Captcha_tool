@@ -1,0 +1,9 @@
+Flask
+fastmcp
+pytesseract
+Pillow
+python-dotenv
+google-generativeai
+langchain-google-genai
+langgraph
+langchain-mcp-adapters

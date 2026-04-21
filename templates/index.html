@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CAPTCHA Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .captcha-container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            text-align: center;
+            width: 350px;
+        }
+        .captcha-container h1 {
+            margin-bottom: 20px;
+        }
+        #captcha-image {
+            margin-bottom: 15px;
+        }
+        #captcha-image img {
+            width: 100%;
+            max-width: 300px;
+            height: auto;
+            border: 2px solid #333;
+            border-radius: 8px;
+        }
+        input {
+            width: 80%;
+            padding: 10px;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .btn-row {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .btn-row button {
+            padding: 10px 16px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+        }
+        .btn-row button:hover {
+            background-color: #0056b3;
+        }
+        #captcha-result, #captcha-guess {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        #captcha-guess {
+            color: darkgreen;
+        }
+    </style>
+</head>
+<body>
+    <div class="captcha-container">
+        <h1>🧩 CAPTCHA Challenge</h1>
+        <div id="captcha-image"><p>Loading...</p></div>
+
+        <input type="text" id="captcha-input" placeholder="Enter CAPTCHA here">
+
+        <div class="btn-row">
+            <button onclick="verifyCaptcha()">✅ Verify</button>
+            <button onclick="generateCaptcha()">🔄 Reload</button>
+            <button onclick="breakCaptcha()">🧠 Break</button>
+        </div>
+
+        <p id="captcha-result"></p>
+        <p id="captcha-guess"></p>
+    </div>
+
+    <script>
+        let currentCaptchaId = null;
+
+        async function generateCaptcha() {
+            const imgDiv = document.getElementById("captcha-image");
+            const resultMsg = document.getElementById("captcha-result");
+            const guessMsg = document.getElementById("captcha-guess");
+            resultMsg.textContent = "";
+            guessMsg.textContent = "";
+            imgDiv.innerHTML = "<p>Loading...</p>";
+
+            try {
+                const response = await fetch("/generate");
+                const data = await response.json();
+
+                if (data.image && data.id) {
+                    currentCaptchaId = data.id;
+                    imgDiv.innerHTML = `<img src="${data.image}" alt="CAPTCHA">`;
+                } else {
+                    imgDiv.innerHTML = `<p>Error: ${data.error || "No image found"}</p>`;
+                }
+            } catch (err) {
+                imgDiv.innerHTML = `<p>❌ Error fetching CAPTCHA: ${err}</p>`;
+            }
+        }
+
+        async function verifyCaptcha() {
+            const input = document.getElementById("captcha-input").value.trim();
+            const resultMsg = document.getElementById("captcha-result");
+
+            if (!currentCaptchaId || !input) {
+                resultMsg.textContent = "⚠️ Please enter CAPTCHA and generate one first.";
+                return;
+            }
+
+            try {
+                const response = await fetch("/verify", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id: currentCaptchaId, input })
+                });
+                const data = await response.json();
+                resultMsg.textContent = data.result || "❌ Unexpected error.";
+            } catch (err) {
+                resultMsg.textContent = `❌ Error verifying CAPTCHA: ${err}`;
+            }
+        }
+
+     async function breakCaptcha() {
+    const imgTag = document.querySelector("#captcha-image img");
+    const guessMsg = document.getElementById("captcha-guess");
+    const inputBox = document.getElementById("captcha-input");
+
+    if (!imgTag || !imgTag.src.startsWith("data:image")) {
+        guessMsg.textContent = "⚠️ No CAPTCHA image found.";
+        return;
+    }
+
+    try {
+        const response = await fetch("/break", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ image: imgTag.src })
+        });
+        const data = await response.json();
+
+        guessMsg.innerHTML = `
+            <strong>Guess:</strong> ${data.guess}<br>
+            <strong>Source:</strong> ${data.source}
+        `;
+
+        // Auto-fill the guess into the input box
+        inputBox.value = data.guess;
+    } catch (err) {
+        guessMsg.textContent = `❌ Error breaking CAPTCHA: ${err}`;
+    }
+}
+
+
+
+        window.onload = generateCaptcha;
+    </script>
+</body>
+</html>
